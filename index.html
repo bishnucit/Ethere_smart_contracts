@@ -40,7 +40,7 @@
             web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
         }
 
-        web3.eth.defaultAccount = web3.eth.accounts[0];
+        web3.eth.defaultAccount = web3.eth.accounts[3];
 
         var CoursetroContract = web3.eth.contract([
 	{
@@ -95,10 +95,16 @@
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
 	}
 ]);
 
-    var Coursetro = CoursetroContract.at('0x1936d5ddafb0219a1f0ef6f2174ecef834cee7b6');
+    var Coursetro = CoursetroContract.at('0xbb9e5c5e517e5a13568480f03b094c271f768ed2');
     console.log(Coursetro);
 
     var instructorEvent = Coursetro.Instructor();
@@ -114,7 +120,10 @@
     });
 
     $("#button").click(function() {
-        Coursetro.setInstructor($("#name").val(), $("#age").val());
+        Coursetro.setInstructor($("#name").val(), $("#age").val(),(err, res)=>{
+            $("#loader").hide();
+            console.log("Exception");
+        });
         $("#loader").show();
     });
     </script>

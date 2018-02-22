@@ -15,18 +15,24 @@
     <div class="container">
 
         <h1>Coursetro Instructor</h1>
+        <span id="countIns"></span>
 
         <h2 id="instructor"></h2>
-        <img id= "loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
+        <span id="insTrans"></span>
+        <hr>
 
-        <label for="name" class="col-lg-2 control-label">Instructor Name</label>
-        <input id="name" type="text">
+        <img id="loader" src="https://loading.io/spinners/double-ring/lg.double-ring-spinner.gif">
 
-        <label for="name" class="col-lg-2 control-label">Instructor Age</label>
+        <label for="fName" class="col-lg-2 control-label">First Name</label>
+        <input id="fName" type="text">
+
+        <label for="lName" class="col-lg-2 control-label">Last Name</label>
+        <input id="lName" type="text">
+
+        <label for="age" class="col-lg-2 control-label">Instructor Age</label>
         <input id="age" type="text">
 
         <button id="button">Update Instructor</button>
-
 
     </div>
 
@@ -45,13 +51,69 @@
         var CoursetroContract = web3.eth.contract([
 	{
 		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "instructorAccts",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
 		"inputs": [],
+		"name": "getInstructors",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "ins",
+				"type": "address"
+			}
+		],
 		"name": "getInstructor",
 		"outputs": [
 			{
 				"name": "",
-				"type": "string"
+				"type": "uint256"
 			},
+			{
+				"name": "",
+				"type": "bytes16"
+			},
+			{
+				"name": "",
+				"type": "bytes16"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "countInstructors",
+		"outputs": [
 			{
 				"name": "",
 				"type": "uint256"
@@ -66,8 +128,13 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "name",
-				"type": "string"
+				"name": "fName",
+				"type": "bytes16"
+			},
+			{
+				"indexed": false,
+				"name": "lName",
+				"type": "bytes16"
 			},
 			{
 				"indexed": false,
@@ -75,19 +142,27 @@
 				"type": "uint256"
 			}
 		],
-		"name": "Instructor",
+		"name": "instructorInfo",
 		"type": "event"
 	},
 	{
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_fName",
-				"type": "string"
+				"name": "_address",
+				"type": "address"
 			},
 			{
 				"name": "_age",
 				"type": "uint256"
+			},
+			{
+				"name": "_fName",
+				"type": "bytes16"
+			},
+			{
+				"name": "_lName",
+				"type": "bytes16"
 			}
 		],
 		"name": "setInstructor",
@@ -95,37 +170,34 @@
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
-	},
-	{
-		"inputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "constructor"
 	}
 ]);
 
-    var Coursetro = CoursetroContract.at('0xbb9e5c5e517e5a13568480f03b094c271f768ed2');
-    console.log(Coursetro);
+    var Coursetro = CoursetroContract.at('0xc823adf3f930ecf87138c3a5877176b2ee29f33d');
 
-    var instructorEvent = Coursetro.Instructor();
-
-    instructorEvent.watch(function(error, result){
-        if (!error){
+      //var instructorEvent = Coursetro.Instructor();
+      var instructorEvent = Coursetro.instructorInfo({}, 'latest');
+      instructorEvent.watch(function (err, result) {
+    if (!err) {
+        if (result.blockHash != $("#instrans").html())
             $("#loader").hide();
-            $("#instructor").html(result.args.name + '(' + result.args.age+ ' years old)');
-        }else{
-            $("#loader").hide();
-            console.log(error);
-        }
-    });
-
-    $("#button").click(function() {
-        Coursetro.setInstructor($("#name").val(), $("#age").val(),(err, res)=>{
-            $("#loader").hide();
-            console.log("Exception");
-        });
-        $("#loader").show();
-    });
+        $("#insTrans").html('Block hash: ' +result.blockHash);
+        $("#instructor").html(web3.toAscii(result.args.fName) + ' ' + web3.toAscii(result.args.lName) + ' (' + result.args.age + ' years old)');
+    } else {
+        $("#loader").hide();
+    }
+});
+Coursetro.countInstructors((err, res) => {
+    if (res)
+        $("#countIns").html(res.c + ' Instructors');
+});
+$("#button").click(function() {
+$("#loader").show();
+Coursetro.setInstructor(web3.eth.defaultAccount, $("#age").val(), $("#fName").val(),$("#lName").val(), (err, res) => {
+    if (err)
+        $("#loader").hide();
+});
+      });
     </script>
 
 </body>
